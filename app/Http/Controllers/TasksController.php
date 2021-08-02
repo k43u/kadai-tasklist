@@ -108,7 +108,7 @@ class TasksController extends Controller
         
         $task = Task::findOrFail($id);
        
-        $message->status = $request->status;
+        $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
         
