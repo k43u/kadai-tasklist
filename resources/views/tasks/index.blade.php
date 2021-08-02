@@ -24,7 +24,9 @@
            </tbody>
         </table>   
     @endif
-    {{-- 作成ページへのリンク --}}
+   
+    {{ $tasks->links() }}
+    
     {!! link_to_route('tasks.create', 'タスクの作成', [],
   ['class' => 'btn btn-primary']) !!}
 @endsection
