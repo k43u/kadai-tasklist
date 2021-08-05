@@ -3,9 +3,14 @@
 @section('content')
 
    <h1>タスク一覧</h1>
-   {!! link_to_route('signup.get', 'ユーザー登録', [], 
-  ['class' => 'btn btn-primary']) !!}
    
+    @if (Auth::check())
+        {{ Auth::user()->name }}
+    @else
+        {{-- ユーザ登録ページへのリンク --}}
+             {!! link_to_route('signup.get', 'ユーザー登録', [], ['class' => 'btn btn-primary']) !!}
+        </div>
+    @endif
    
    @if (count($tasks) > 0)
        <table class="table table-striped">
