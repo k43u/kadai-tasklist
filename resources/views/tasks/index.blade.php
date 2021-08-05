@@ -3,6 +3,9 @@
 @section('content')
 
    <h1>タスク一覧</h1>
+   {!! link_to_route('signup.get', 'ユーザー登録', [], 
+  ['class' => 'btn btn-primary']) !!}
+   
    
    @if (count($tasks) > 0)
        <table class="table table-striped">
