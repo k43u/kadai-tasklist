@@ -8,19 +8,28 @@ use App\Task;
 
 class TasksController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+    
     public function index()
     {
-        $tasks = Task::orderBy('id', 'desc')->paginate(25);
-
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
-
+        $data = [];
+        if (\Auth::check()) { // 認証済みの場合
+            // 認証済みユーザを取得
+            $user = \Auth::user();
+            // ユーザのタスクの一覧を作成日時の降順で取得
+             $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+        }
+        
+        return view('index', $data);
     }
 
     /**
@@ -33,6 +42,7 @@ class TasksController extends Controller
         $task = new Task;
         
         return view('tasks.create', [
+           
             'task' => $task,
             ]);
     }
@@ -45,19 +55,20 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        
+        // バリデーション
         $request->validate([
-            
-            'status' => 'required|max:10',
+            'status' =>'required|max:255',
             'content' => 'required|max:255',
         ]);
+
+        // 認証済みユーザ（閲覧者）のタスクとして作成（リクエストされた値をもとに作成）
+        $request->user()->tasks()->create([
+            'status' =>$request->status,
+            'content' =>$request->content,
+        ]);
         
-        $task = new Task;
-        $task->status = $request->status;  
-        $task->content = $request->content;
-        $task->save();
-        
-        return redirect('/');
+        // 前のURLへリダイレクトさせる
+        return back();
     }
 
     /**
@@ -66,15 +77,16 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+     
     public function show($id)
     {
-        
-         $task = Task::findOrFail($id);
+       $task = Task::findOrFail($id);
          
          return view('tasks.show', [
              'task' => $task,
          ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -122,13 +134,18 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+   
     public function destroy($id)
     {
-        
-        $task = Task::findOrFail($id);
-        
-        $task->delete();
-        
-        return redirect('/');
+        // idの値でタスクを検索して取得
+        $task = \App\Task::findOrFail($id);
+
+        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、タスクを削除
+        if (\Auth::id() === $task->user_id) {
+            $task->delete();
+        }
+
+        // 前のURLへリダイレクトさせる
+        return back();
     }
 }
